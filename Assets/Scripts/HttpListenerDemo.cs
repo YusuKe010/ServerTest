@@ -9,7 +9,6 @@ using Debug = UnityEngine.Debug;
 public class HttpListenerDemo : MonoBehaviour
 {
 	[SerializeField] private int _port = 7000;
-	[SerializeField] private string _ip = "localhost"; //"192.168.56.1";
 	private string _redirectURL = "";
 	private HttpListener _listener = default;
 	private Stream _responseOutput;
@@ -27,7 +26,7 @@ public class HttpListenerDemo : MonoBehaviour
 		Debug.Log(_byteArr);
 
 
-		_redirectURL = $"http://{_ip}:{_port}/";
+		_redirectURL = $"http://*:{_port}/";
 
 		_listener = new();
 
@@ -65,19 +64,14 @@ public class HttpListenerDemo : MonoBehaviour
 				var context = await _listener.GetContextAsync();
 				_response = context.Response;
 				_response.ContentType = "video/mp4";
-				//-_response.Headers.Add("Content-Type","video/mp4");
-				//_response.Headers.Add("Content-Disposition","attachment");
-				
+
 
 				// 受け取ったリダイレクトURLをログに出力する
 				Debug.Log($"redirectUri: {context.Request.Url}");
 
-				// using ( FileStream stream = new FileStream("newMovie.mp4", FileMode.Create, FileAccess.Write))
-				// {
 				_response.ContentLength64 = _byteArr.Length;
 				_responseOutput = _response.OutputStream;
 				await _responseOutput.WriteAsync(_byteArr, 0, _byteArr.Length);
-				// }
 
 				Debug.Log(_responseOutput);
 
