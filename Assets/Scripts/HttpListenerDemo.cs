@@ -1,24 +1,32 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using UnityEngine;
-using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
+
 
 public class HttpListenerDemo : MonoBehaviour
 {
 	[SerializeField] private int _port = 7000;
-	[SerializeField] private string _ip = "192.168.56.1";
+	[SerializeField] private string _ip = "localhost"; //"192.168.56.1";
 	private string _redirectURL = "";
 	private HttpListener _listener = default;
-	private Stream responseOutput;
+	private Stream _responseOutput;
 	private HttpListenerResponse _response;
+	private byte[] _byteArr;
+	private StreamWriter _streamWriter;
+	private FileStream fileSteam;
+	private TextFileReader _textFile;
 
-	private void Start()
+	private async void Start()
 	{
+		fileSteam = new FileStream(@".\Assets\screenshot\Movie.mp4", FileMode.Open, FileAccess.Read);
+		_byteArr = new byte[fileSteam.Length];
+		await fileSteam.ReadAsync(_byteArr, 0, _byteArr.Length);
+		Debug.Log(_byteArr);
+
+
 		_redirectURL = $"http://{_ip}:{_port}/";
 
 		_listener = new();
@@ -27,6 +35,7 @@ public class HttpListenerDemo : MonoBehaviour
 		{
 			_listener.Prefixes.Add(_redirectURL);
 			_listener.Start();
+			Debug.Log("Listenスタート");
 		}
 		catch (Exception e)
 		{
@@ -34,28 +43,46 @@ public class HttpListenerDemo : MonoBehaviour
 			return;
 		}
 
+		Access();
+		// 	await Access();
+	}
+
+	private void OnDestroy()
+	{
+		_response.Close();
+		_responseOutput?.Close();
+		_listener?.Stop();
+		Debug.Log("終わり");
+		//fileSteam.Close();
+	}
+
+	void Access()
+	{
 		Task.Run(async () =>
 		{
 			try
 			{
 				var context = await _listener.GetContextAsync();
 				_response = context.Response;
+				_response.ContentType = "video/mp4";
+				//-_response.Headers.Add("Content-Type","video/mp4");
+				//_response.Headers.Add("Content-Disposition","attachment");
+				
 
 				// 受け取ったリダイレクトURLをログに出力する
 				Debug.Log($"redirectUri: {context.Request.Url}");
 
-				// 受け取ったリダイレクトURLのクエリパラメータからcodeを取得する
-				var query = context.Request.Url.Query;
-				var code = HttpUtility.ParseQueryString(query).Get("code");
+				// using ( FileStream stream = new FileStream("newMovie.mp4", FileMode.Create, FileAccess.Write))
+				// {
+				_response.ContentLength64 = _byteArr.Length;
+				_responseOutput = _response.OutputStream;
+				await _responseOutput.WriteAsync(_byteArr, 0, _byteArr.Length);
+				// }
 
-				// リダイレクトURLで開くページのレスポンスページに取得したcodeを表示する
-				var responseString =
-					$"<p><a href=\"./screenshot/ss001.png\" download=\"テスト.jpg\">Download</a></p>";
-				var buffer = Encoding.UTF8.GetBytes(responseString);
+				Debug.Log(_responseOutput);
 
-				_response.ContentLength64 = buffer.Length;
-				responseOutput = _response.OutputStream;
-				await responseOutput.WriteAsync(buffer, 0, buffer.Length);
+				_response.Close();
+				Access();
 			}
 			catch (Exception e)
 			{
@@ -63,12 +90,5 @@ public class HttpListenerDemo : MonoBehaviour
 				throw;
 			}
 		});
-	}
-
-	private void OnDestroy()
-	{
-		_response.Close();
-		responseOutput?.Close();
-		_listener?.Stop();
 	}
 }

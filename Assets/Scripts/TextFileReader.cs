@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace name
+///<summary>summary</summary>
+public class TextFileReader : MonoBehaviour
 {
-	///<summary>summary</summary>
-	public class TextFileReader : MonoBehaviour
+	[SerializeField] private TextAsset _textFile;
+	[SerializeField] private string _text;
+
+	public string Text => _text;
+
+	public Task StringRead()
 	{
-		[SerializeField] private TextAsset _textFile;
-		[SerializeField] private Text _text;
-
-		private List<string> textData = new List<string>();
-
-		private void Start()
+		return Task.Run(async () =>
 		{
 			StringReader render = new StringReader(_textFile.text);
 			while (render.Peek() != -1)
 			{
-				string a = render.ReadLine();
-				textData.Add($"{a}\n");
-				_text.text += $"{a}\n";
+				string a = await render.ReadLineAsync();
+				_text += $"{a}\n";
 			}
-		}
+		});
 	}
 }
