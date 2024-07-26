@@ -1,88 +1,104 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
+[Serializable]
+public class UrlData
+{
+    [SerializeField] int _port;
+    [SerializeField] string _ip;
+    [SerializeField] string _url;
+    public string Url => $"http://{_ip}:{_port}/";
+    public int Port => _port;
+    public string Ip => _ip;
+}
 
 public class HttpListenerDemo : MonoBehaviour
 {
-	[SerializeField] private int _port = 7000;
-	private string _redirectURL = "";
-	private HttpListener _listener = default;
-	private Stream _responseOutput;
-	private HttpListenerResponse _response;
-	private byte[] _byteArr;
-	private StreamWriter _streamWriter;
-	private FileStream fileSteam;
-	private TextFileReader _textFile;
+    [SerializeField] UrlData _urlData;
+    [SerializeField] string _movieFileURL = @".\Assets\screenshot\Movie.mp4";
 
-	private async void Start()
-	{
-		fileSteam = new FileStream(@".\Assets\screenshot\Movie.mp4", FileMode.Open, FileAccess.Read);
-		_byteArr = new byte[fileSteam.Length];
-		await fileSteam.ReadAsync(_byteArr, 0, _byteArr.Length);
-		Debug.Log(_byteArr);
+    private HttpListener _listener = default;
+    private HttpListenerResponse _response;
+    private FileStream fileSteam;
+    private Stream _responseOutput;
 
+    private byte[] _byteArr;
 
-		_redirectURL = $"http://*:{_port}/";
+    private async void Start()
+    {
+        await FileToByte();
 
-		_listener = new();
+        ListenerStart();
+    }
 
-		try
-		{
-			_listener.Prefixes.Add(_redirectURL);
-			_listener.Start();
-			Debug.Log("Listenスタート");
-		}
-		catch (Exception e)
-		{
-			Debug.LogError(e.Message);
-			return;
-		}
+    async Task FileToByte()
+    {
+        if (_movieFileURL == "")
+            return;
+        try
+        {
+            fileSteam = new FileStream(_movieFileURL, FileMode.Open, FileAccess.Read);
+            _byteArr = new byte[fileSteam.Length];
+            await fileSteam.ReadAsync(_byteArr, 0, _byteArr.Length);
+            Debug.Log(_byteArr);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
+    }
 
-		Access();
-		// 	await Access();
-	}
+    private void OnDestroy()
+    {
+        _response?.Close();
+        _responseOutput?.Close();
+        _listener?.Stop();
+        Debug.Log("Listen終了");
+    }
 
-	private void OnDestroy()
-	{
-		_response.Close();
-		_responseOutput?.Close();
-		_listener?.Stop();
-		Debug.Log("終わり");
-		//fileSteam.Close();
-	}
+    void ListenerStart()
+    {
+        _listener = new();
+        try
+        {
+            _listener.Prefixes.Add(_urlData.Url);
+            _listener.Start();
+            Debug.Log("Listenスタート");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+            return;
+        }
 
-	void Access()
-	{
-		Task.Run(async () =>
-		{
-			try
-			{
-				var context = await _listener.GetContextAsync();
-				_response = context.Response;
-				_response.ContentType = "video/mp4";
+        CreateWeb();
+    }
 
+    void CreateWeb()
+    {
+        if(_byteArr == null) 
+            return;
 
-				// 受け取ったリダイレクトURLをログに出力する
-				Debug.Log($"redirectUri: {context.Request.Url}");
+        Task.Run(async () =>
+        {
+            var context = await _listener.GetContextAsync();
+            _response = context.Response;
+            _response.ContentType = "video/mp4";
 
-				_response.ContentLength64 = _byteArr.Length;
-				_responseOutput = _response.OutputStream;
-				await _responseOutput.WriteAsync(_byteArr, 0, _byteArr.Length);
+            // 受け取ったリダイレクトURLをログに出力する
+            Debug.Log($"redirectUri: {context.Request.Url}");
 
-				Debug.Log(_responseOutput);
+            _response.ContentLength64 = _byteArr.Length;
+            _responseOutput = _response.OutputStream;
+            await _responseOutput.WriteAsync(_byteArr, 0, _byteArr.Length);
 
-				_response.Close();
-				Access();
-			}
-			catch (Exception e)
-			{
-				Debug.LogError(e.Message);
-				throw;
-			}
-		});
-	}
+            _response.Close();
+            CreateWeb();
+        });
+    }
 }

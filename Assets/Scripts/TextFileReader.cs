@@ -13,6 +13,11 @@ public class TextFileReader : MonoBehaviour
 
 	public string Text => _text;
 
+	private async void Start()
+	{
+		await StringRead();
+	}
+
 	public Task StringRead()
 	{
 		return Task.Run(async () =>
