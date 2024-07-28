@@ -1,65 +1,61 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using ZXing;        //QRƒR[ƒhì¬‚É•K—v
-using ZXing.QrCode; //QRƒR[ƒhì¬‚É•K—v
+using ZXing; //QRã‚³ãƒ¼ãƒ‰ä½œæˆã«å¿…è¦
+using ZXing.QrCode; //QRã‚³ãƒ¼ãƒ‰ä½œæˆã«å¿…è¦
 
-namespace Server
+public class QRcodeScript : MonoBehaviour
 {
-    public class QRcodeScript : MonoBehaviour
+	[SerializeField] string ImageLink; //QRã‚³ãƒ¼ãƒ‰åŒ–ã—ãŸã„URL
+
+	[SerializeField] Image QRcodeSprite; //æœ€çµ‚çš„ã«è¡¨ç¤ºã™ã‚‹SpriteRendererã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+
+	private Texture2D EncodedQRTextire; //ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰ã—ã¦å‡ºæ¥ãŸQRã‚³ãƒ¼ãƒ‰ã®Txture2DãŒå…¥ã‚‹
+
+	private int QrTxtureW = 256; //ä½œæˆã™ã‚‹ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚µã‚¤ã‚º
+	private int QrTxtureH = 256; //ä½œæˆã™ã‚‹ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚µã‚¤ã‚º
+
+    private void Start()
     {
-        [SerializeField] Image QRcodeSprite;//ÅI“I‚É•\¦‚·‚éSpriteRendererƒIƒuƒWƒFƒNƒg
-        [SerializeField] string ImageLink = "http://*:7000";//QRƒR[ƒh‰»‚µ‚½‚¢URL
-
-        private Texture2D EncodedQRTextire;//ƒGƒ“ƒR[ƒh‚µ‚Äo—ˆ‚½QRƒR[ƒh‚ÌTxture2D‚ª“ü‚é
-
-        private int QrTxtureW = 256;//ì¬‚·‚éƒeƒNƒXƒ`ƒƒƒTƒCƒY
-        private int QrTxtureH = 256;//ì¬‚·‚éƒeƒNƒXƒ`ƒƒƒTƒCƒY
-
-
-
-        void Start()
-        {
-            //V‹K‚Ì‹ó‚ÌƒeƒNƒXƒ`ƒƒ‚ğì¬
-            EncodedQRTextire = new Texture2D(QrTxtureW, QrTxtureH);
-
-            //ƒGƒ“ƒR[ƒhˆ—
-            var color32 = Encode(ImageLink, EncodedQRTextire.width, EncodedQRTextire.height);
-
-            //https://docs.unity3d.com/2018.4/Documentation/ScriptReference/Texture2D.SetPixels32.html
-            //ƒsƒNƒZƒ‹ƒJƒ‰[‚ÌƒuƒƒbƒN‚ğİ’è
-            EncodedQRTextire.SetPixels32(color32);
-
-            //https://docs.unity3d.com/ja/2017.4/ScriptReference/Texture2D.Apply.html
-            //ƒGƒ“ƒR[ƒh‚Åæ“¾‚µ‚½î•ñ‚Å•ÏX‚ğ“K—p‚·‚é
-            EncodedQRTextire.Apply();
-
-            //ƒXƒvƒ‰ƒCƒg‚ğì¬‚µ‚ÄƒIƒuƒWƒFƒNƒg‚É’£‚è•t‚¯
-            QRcodeSprite.sprite = Sprite.Create(EncodedQRTextire, new Rect(0, 0, QrTxtureW, QrTxtureH), Vector2.zero);
-
-        }
-
-
-
-
-        //32 ƒrƒbƒgŒ`®‚Å‚Ì RGBA ‚ÌF‚Ì•\Œ»
-        //https://docs.unity3d.com/ja/2018.4/ScriptReference/Color32.html
-
-        //ƒGƒ“ƒR[ƒhˆ—i‚±‚±‚ÍƒTƒ“ƒvƒ‹’Ê‚èj
-        private static Color32[] Encode(string textForEncoding, int width, int height)
-        {
-            var writer = new BarcodeWriter
-            {
-                Format = BarcodeFormat.QR_CODE,
-
-                Options = new QrCodeEncodingOptions
-                {
-                    Height = height,
-                    Width = width
-                }
-            };
-            return writer.Write(textForEncoding);
-        }
+		CreateQRCode();
     }
+    public void CreateQRCode()
+	{
+		//æ–°è¦ã®ç©ºã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ä½œæˆ
+		EncodedQRTextire = new Texture2D(QrTxtureW, QrTxtureH);
+
+		//ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰å‡¦ç†
+		var color32 = Encode(ImageLink, EncodedQRTextire.width, EncodedQRTextire.height);
+
+		//https://docs.unity3d.com/2018.4/Documentation/ScriptReference/Texture2D.SetPixels32.html
+		//ãƒ”ã‚¯ã‚»ãƒ«ã‚«ãƒ©ãƒ¼ã®ãƒ–ãƒ­ãƒƒã‚¯ã‚’è¨­å®š
+		EncodedQRTextire.SetPixels32(color32);
+
+		//https://docs.unity3d.com/ja/2017.4/ScriptReference/Texture2D.Apply.html
+		//ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰ã§å–å¾—ã—ãŸæƒ…å ±ã§å¤‰æ›´ã‚’é©ç”¨ã™ã‚‹
+		EncodedQRTextire.Apply();
+
+		//ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’ä½œæˆã—ã¦ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å¼µã‚Šä»˜ã‘
+		QRcodeSprite.sprite = Sprite.Create(EncodedQRTextire, new Rect(0, 0, QrTxtureW, QrTxtureH), Vector2.zero);
+		
+	}
+
+
+	//32 ãƒ“ãƒƒãƒˆå½¢å¼ã§ã® RGBA ã®è‰²ã®è¡¨ç¾
+	//https://docs.unity3d.com/ja/2018.4/ScriptReference/Color32.html
+
+	//ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰å‡¦ç†ï¼ˆã“ã“ã¯ã‚µãƒ³ãƒ—ãƒ«é€šã‚Šï¼‰
+	private static Color32[] Encode(string textForEncoding, int width, int height)
+	{
+		var writer = new BarcodeWriter
+		{
+			Format = BarcodeFormat.QR_CODE,
+
+			Options = new QrCodeEncodingOptions
+			{
+				Height = height,
+				Width = width
+			}
+		};
+		return writer.Write(textForEncoding);
+	}
 }

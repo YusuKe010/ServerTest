@@ -70,3 +70,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+Assets/Plugins/UniRx/
+Assets/Plugins/UniTask/
+Assets/Plugins/UniRx.meta
+Assets/Plugins/UniTask.meta
