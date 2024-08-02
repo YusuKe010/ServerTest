@@ -1,37 +1,45 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
-using UniRx;
 
 [Serializable]
 public class UrlData
 {
-	[SerializeField] int _port;
-	[SerializeField] string _ip;
-	[SerializeField] string _url;
-	public string Url => $"http://{_ip}:{_port}/";
+	[SerializeField] private int _port;
+	[SerializeField] private string _ip;
+	[SerializeField] private string _url;
+
+	public string Url
+	{
+		get
+		{
+			if (_url == "")
+				return $"http://{_ip}:{_port}/";
+			return _url;
+		}
+	}
+
 	public int Port => _port;
 	public string Ip => _ip;
 }
 
-public class CreateHttpServer : MonoBehaviour
+public class HttpListenerDemo : MonoBehaviour
 {
-	[SerializeField] UrlData _urlData;
-	[SerializeField] string _movieFileURL = @".\Assets\screenshot\Movie.mp4";
+	[SerializeField] private UrlData _urlData;
+	[SerializeField] private string _movieFileURL = @".\Assets\screenshot\Movie.mp4";
+
+	private byte[] _byteArr;
+	private FileStream _fileSteam;
 
 	private HttpListener _listener;
 	private HttpListenerResponse _response;
-	private FileStream _fileSteam;
 	private Stream _responseOutput;
 
-	private byte[] _byteArr;
-
 	/// <summary>
-	/// 動画のファイルの場所
+	///     動画のファイルの場所
 	/// </summary>
 	public string MovieFileURL
 	{
@@ -39,8 +47,20 @@ public class CreateHttpServer : MonoBehaviour
 		set => _movieFileURL = value;
 	}
 
+	private async void Start()
+	{
+		await FileToByte();
+		ListenerStart();
+	}
 
-	async Task FileToByte()
+	private void OnDestroy()
+	{
+		ListenerStop();
+		Debug.Log("Listen終了");
+	}
+
+
+	private async Task FileToByte()
 	{
 		if (_movieFileURL == "")
 			return;
@@ -57,20 +77,15 @@ public class CreateHttpServer : MonoBehaviour
 		}
 	}
 
-	private void OnDestroy()
-	{
-		ListenerStop();
-		Debug.Log("Listen終了");
-	}
-
 	public void ListenerStart()
 	{
-		_listener = new();
+		_listener = new HttpListener();
 		try
 		{
 			_listener.Prefixes.Add(_urlData.Url);
 			_listener.Start();
 			Debug.Log("Listenスタート");
+			Debug.Log(_urlData.Url);
 		}
 		catch (Exception e)
 		{
@@ -81,26 +96,27 @@ public class CreateHttpServer : MonoBehaviour
 		CreateWeb();
 	}
 
-	void ListenerStop()
+	private void ListenerStop()
 	{
 		_response?.Close();
 		_responseOutput?.Close();
 		_listener?.Stop();
 	}
 
-	void CreateWeb()
+	private void CreateWeb()
 	{
 		if (_byteArr == null)
 			return;
 
 		Task.Run(async () =>
 		{
+			//QRコードを読み込むのを待つ
 			var context = await _listener.GetContextAsync();
 
 			// 受け取ったリダイレクトURLをログに出力する
 			Debug.Log($"redirectUri: {context.Request.Url}");
 			// 動画ファイルの更新
-			await FileToByte();
+			//await FileToByte();
 
 			//サーバーの設定
 			_response = context.Response;

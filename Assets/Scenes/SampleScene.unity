@@ -411,7 +411,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _urlData:
     _port: 7000
-    _ip: 10.40.12.194
+    _ip: 10.71.11.190
     _url: 
   _movieFileURL: .\Assets\screenshot\Movie.mp4
 --- !u!1 &963194225
@@ -662,7 +662,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 231108b59d381d34abd907dcef4527d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ImageLink: http://10.40.12.194:7000
+  ImageLink: http://10.71.11.190:7000
   QRcodeSprite: {fileID: 1985231464}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

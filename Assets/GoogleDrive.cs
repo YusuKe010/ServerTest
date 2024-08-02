@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityGoogleDrive;
+using File = UnityGoogleDrive.Data.File;
 
 ///<summary>summary</summary>
 public class GoogleDrive : MonoBehaviour
@@ -17,7 +16,12 @@ public class GoogleDrive : MonoBehaviour
 		Access();
 	}
 
-	void Access()
+	private void OnDestroy()
+	{
+		_fileStream?.Close();
+	}
+
+	private void Access()
 	{
 		Task.Run(async () =>
 		{
@@ -25,28 +29,19 @@ public class GoogleDrive : MonoBehaviour
 			_byteArr = new byte[_fileStream.Length];
 			await _fileStream.ReadAsync(_byteArr, 0, _byteArr.Length);
 
-			UnityGoogleDrive.Data.File file = new UnityGoogleDrive.Data.File();
+			var file = new File();
 			file.Name = _fileName;
 			file.Content = _byteArr;
 
 			var request = GoogleDriveFiles.Create(file);
 
-			request.Send().OnDone += (responce) =>
+			request.Send().OnDone += responce =>
 			{
 				if (request.IsError)
-				{
 					Debug.LogError(request.Error);
-				}
 				else
-				{
 					Debug.Log(request.ResponseData.Name);
-				}
 			};
 		});
-	}
-
-	private void OnDestroy()
-	{
-		_fileStream?.Close();
 	}
 }

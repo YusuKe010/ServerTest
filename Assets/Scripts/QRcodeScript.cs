@@ -1,24 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
-using ZXing; //QRコード作成に必要
-using ZXing.QrCode; //QRコード作成に必要
+using ZXing;
+using ZXing.QrCode;
+//QRコード作成に必要
+
+//QRコード作成に必要
 
 public class QRcodeScript : MonoBehaviour
 {
-	[SerializeField] string ImageLink; //QRコード化したいURL
+	[SerializeField] private string ImageLink; //QRコード化したいURL
 
-	[SerializeField] Image QRcodeSprite; //最終的に表示するSpriteRendererオブジェクト
+	[SerializeField] private Image QRcodeSprite; //最終的に表示するSpriteRendererオブジェクト
 
 	private Texture2D EncodedQRTextire; //エンコードして出来たQRコードのTxture2Dが入る
+	private readonly int QrTxtureH = 256; //作成するテクスチャサイズ
 
-	private int QrTxtureW = 256; //作成するテクスチャサイズ
-	private int QrTxtureH = 256; //作成するテクスチャサイズ
+	private readonly int QrTxtureW = 256; //作成するテクスチャサイズ
 
-    private void Start()
-    {
+	private void Start()
+	{
 		CreateQRCode();
-    }
-    public void CreateQRCode()
+	}
+
+	public void CreateQRCode()
 	{
 		//新規の空のテクスチャを作成
 		EncodedQRTextire = new Texture2D(QrTxtureW, QrTxtureH);
@@ -36,7 +40,6 @@ public class QRcodeScript : MonoBehaviour
 
 		//スプライトを作成してオブジェクトに張り付け
 		QRcodeSprite.sprite = Sprite.Create(EncodedQRTextire, new Rect(0, 0, QrTxtureW, QrTxtureH), Vector2.zero);
-		
 	}
 
 

@@ -1,54 +1,52 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.Networking;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Networking;
 
 public class ConnectionTest : MonoBehaviour
 {
-	
 	// Start is called before the first frame update
-	void Start()
+	private void Start()
 	{
 		StartCoroutine(UPloadFile());
 	}
 
 	// Update is called once per frame
-	void Update()
+	private void Update()
 	{
 	}
 
-	IEnumerator UPloadFile()
+	private IEnumerator UPloadFile()
 	{
-		string fileName = "Movie.mp4";
-		string filePath = @".\Assets\screenshot" + @"\" + fileName;
-		
+		var fileName = "Movie.mp4";
+		var filePath = @".\Assets\screenshot" + @"\" + fileName;
+
 		// 画像ファイルをbyte配列に格納
-		byte[] img = File.ReadAllBytes(filePath);
-		
+		var img = File.ReadAllBytes(filePath);
+
 		// formにバイナリデータを追加
-		WWWForm form = new WWWForm();
+		var form = new WWWForm();
 		form.AddBinaryData("image", img, fileName, "image.mp4");
-		
+
 		// HTTPリクエストを送る
-		UnityWebRequest request = UnityWebRequest.Post("http://192.168.56.1:7000", form);
+		var request = UnityWebRequest.Post("http://192.168.56.1:7000", form);
 		yield return request.SendWebRequest();
-		
+
 		//"Save Texture"ダイアログを表示し、選択されたパスを取得する
-		var path = EditorUtility.SaveFilePanelInProject(title: "Save Texture", defaultName: "test",
-			extension: "png", message: "Save Texture");
-		
+		var path = EditorUtility.SaveFilePanelInProject("Save Texture", "test",
+			"png", "Save Texture");
+
 		//新規の空テクスチャを作成する
 		var texture = new Texture2D(1, 1);
-		byte[] bytes = System.Convert.FromBase64String(request.downloadHandler.text);
+		var bytes = Convert.FromBase64String(request.downloadHandler.text);
 		texture.LoadImage(bytes);
 		var png = texture.EncodeToJPG();
-		
+
 		//PNG形式でエンコード
 		File.WriteAllBytes(path, png);
-		
+
 		//オブジェクトに画像を表示
 		GetComponent<Renderer>().material.mainTexture = texture;
 	}

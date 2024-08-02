@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 
 ///<summary>summary</summary>
 public class TextFileReader : MonoBehaviour
@@ -22,10 +19,10 @@ public class TextFileReader : MonoBehaviour
 	{
 		return Task.Run(async () =>
 		{
-			StringReader render = new StringReader(_textFile.text);
+			var render = new StringReader(_textFile.text);
 			while (render.Peek() != -1)
 			{
-				string a = await render.ReadLineAsync();
+				var a = await render.ReadLineAsync();
 				_text += $"{a}\n";
 			}
 		});
