@@ -5,6 +5,11 @@
       "name": "zonbi",
       "atk" : 10,
       "hp" : 100
+    },
+    {
+      "name" : silme,
+      "atk" : 1,
+      "hp" : 5
     }
   ]
 }
