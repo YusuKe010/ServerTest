@@ -1,5 +1,7 @@
 [
   {
-    "name": "kawa"
+    "name": "zonbi",
+    "atk" : 10,
+    "hp" : 100
   }
 ]
