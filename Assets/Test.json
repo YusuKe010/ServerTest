@@ -1,7 +1,10 @@
-[
-  {
-    "name": "zonbi",
-    "atk" : 10,
-    "hp" : 100
-  }
-]
+{
+  "enemylist" :
+  [
+    {
+      "name": "zonbi",
+      "atk" : 10,
+      "hp" : 100
+    }
+  ]
+}
